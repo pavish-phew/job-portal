@@ -65,7 +65,7 @@ const Navbar = () => {
                   className="hidden md:flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100"
                 >
                   <Zap size={18} className="text-indigo-500" />
-                  <span className="font-medium text-indigo-700">AI Analyzer</span>
+                  <span className="font-medium text-indigo-700">Resume Analyzer</span>
                 </Link>
                 <div className="flex items-center gap-3">
                   <div className="hidden md:block">

@@ -1,6 +1,7 @@
 import Quill from "quill";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { JobCategories, JobLocations } from "../assets/assets";
+import { JobCategories } from "../assets/assets";
+import { IndianCities } from "../constants/locations";
 import axios from "axios";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
@@ -251,7 +252,7 @@ const AddJob = () => {
                     onChange={(e) => setLocation(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white transition-all duration-200"
                   >
-                    {JobLocations.map((loc, index) => (
+                    {IndianCities.map((loc, index) => (
                       <option key={index} value={loc}>
                         {loc}
                       </option>

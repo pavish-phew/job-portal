@@ -10,7 +10,7 @@ const ResumeAnalyzer = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
-  const { backendUrl, userData } = useContext(AppContext);
+  const { backendUrl, userData, setFilterSkills, setIsSearched } = useContext(AppContext);
   const navigate = useNavigate();
 
   // If not logged in or is a recruiter, handle it gracefully
@@ -75,6 +75,10 @@ const ResumeAnalyzer = () => {
       const data = await response.json();
       if (data.success) {
         setResults(data);
+        if (data.skills && data.skills.length > 0) {
+          setFilterSkills(data.skills);
+        }
+        setIsSearched(true);
         toast.success("Resume analyzed successfully!");
       } else {
         toast.error(data.message || "Failed to analyze resume.");
@@ -239,6 +243,19 @@ const ResumeAnalyzer = () => {
                     <p className="text-gray-500 text-lg">No direct matches found. Try widening your search or updating your skills.</p>
                   </div>
                 )}
+                
+                {/* Find More Jobs Button */}
+                <div className="mt-8 text-center">
+                  <button 
+                    onClick={() => navigate('/')} 
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-white border border-indigo-200 text-indigo-700 font-semibold rounded-full hover:bg-indigo-50 transition shadow-sm"
+                  >
+                    Explore all matched jobs on Home Page
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

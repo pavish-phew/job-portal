@@ -16,6 +16,10 @@ export const AppContextProvider = (props) => {
         title: '',
         location: ''
     });
+    
+    // New global filters for AI integration and advanced filtering
+    const [filterSkills, setFilterSkills] = useState([]);
+    const [filterType, setFilterType] = useState('');
 
     const [isSearched, setIsSearched] = useState(false);
 
@@ -148,6 +152,8 @@ export const AppContextProvider = (props) => {
     
     const value = {
         searchFilter, setSearchFilter,
+        filterSkills, setFilterSkills,
+        filterType, setFilterType,
         setIsSearched, isSearched,
         jobs, setJobs,
         setShowRecruiterLogin, showRecruiterLogin,

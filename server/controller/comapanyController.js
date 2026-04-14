@@ -4,6 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 import generateToken from "../utils/generateToken.js";
 import Job from "../models/Job.js";
 import JobApplication from "../models/JobApplication.js";
+import { IndianCities } from "../constants/locations.js";
 
 // Register a new Company
 export const registerCompany = async (req, res) => {
@@ -102,6 +103,10 @@ export const getCompanyData = async (req, res) => {
 // Post a new Job
 export const postJob = async (req, res) => {
   const { title, description, location, salary, level, category } = req.body;
+
+  if (!IndianCities.includes(location)) {
+    return res.json({ success: false, message: "Invalid location. Please select a valid Indian city." });
+  }
 
   const companyId = req.company._id;
 

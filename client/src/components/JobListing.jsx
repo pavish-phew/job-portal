@@ -4,8 +4,12 @@ import { assets, JobCategories, JobLocations } from "../assets/assets";
 import JobCard from "./JobCard";
 import { motion, AnimatePresence } from "framer-motion";
 
+const JobTypes = ["Full Time", "Part Time", "Contract", "Internship", "Senior Level", "Intermediate Level", "Beginner Level"];
+
 const JobListing = () => {
-  const { isSearched, searchFilter, setSearchFilter, jobs } = useContext(AppContext);
+  const { isSearched, searchFilter, setSearchFilter, jobs, filterSkills, setFilterSkills, filterType, setFilterType } = useContext(AppContext);
+
+  const [skillInput, setSkillInput] = useState("");
 
   const initialLoad = useRef(true);
   const [showFilter, setShowFilter] = useState(true);
@@ -57,6 +61,21 @@ const JobListing = () => {
       const matchesSearchLocation = (job) =>
         searchFilter.location === "" ||
         (job.location && job.location.toLowerCase().includes(searchFilter.location.toLowerCase()));
+        
+      const matchesType = (job) =>
+        filterType === "" ||
+        (job.level && job.level.toLowerCase().includes(filterType.toLowerCase())) ||
+        (job.title && job.title.toLowerCase().includes(filterType.toLowerCase()));
+
+      const matchesSkills = (job) => {
+        if (filterSkills.length === 0) return true;
+        if (!job.description) return false;
+        // Check if ANY skill is included in the job description
+        return filterSkills.some(skill => 
+          job.description.toLowerCase().includes(skill.toLowerCase()) ||
+          (job.title && job.title.toLowerCase().includes(skill.toLowerCase()))
+        );
+      };
 
       const newFilteredJobs = jobs
         .slice()
@@ -66,7 +85,9 @@ const JobListing = () => {
             matchesCategory(job) &&
             matchesLocation(job) &&
             matchesTitle(job) &&
-            matchesSearchLocation(job)
+            matchesSearchLocation(job) &&
+            matchesType(job) &&
+            matchesSkills(job)
         );
 
       setFilterJobs(newFilteredJobs);
@@ -92,7 +113,19 @@ const JobListing = () => {
     prevSelectedCategory.current = selectedCategory;
     prevSelectedLocation.current = selectedLocation;
     prevSearchFilter.current = { ...searchFilter };
-  }, [jobs, selectedCategory, selectedLocation, searchFilter]);
+  }, [jobs, selectedCategory, selectedLocation, searchFilter, filterSkills, filterType]);
+
+  const handleAddSkill = (e) => {
+    e.preventDefault();
+    if (skillInput.trim() && !filterSkills.includes(skillInput.trim())) {
+      triggerTransition(() => setFilterSkills([...filterSkills, skillInput.trim()]));
+      setSkillInput("");
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove) => {
+    triggerTransition(() => setFilterSkills(filterSkills.filter(skill => skill !== skillToRemove)));
+  };
 
   const handleCategoryChange = (category) => {
     triggerTransition(() => {
@@ -122,6 +155,8 @@ const JobListing = () => {
     triggerTransition(() => {
       setSelectedCategory([]);
       setSelectedLocation([]);
+      setFilterSkills([]);
+      setFilterType('');
       setSearchFilter({ title: "", location: "" });
     });
   };
@@ -202,6 +237,75 @@ const JobListing = () => {
                   </div>
                 </div>
               )}
+              
+              {/* AI Extracted Skills */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-bold text-lg text-gray-800">Skills Match</h4>
+                  {filterSkills.length > 0 && (
+                    <button 
+                      onClick={() => setFilterSkills([])}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <form onSubmit={handleAddSkill} className="flex gap-2 mb-3">
+                  <input
+                    type="text"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    placeholder="Add a skill..."
+                    className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                  />
+                  <button type="submit" className="bg-primary text-white px-3 py-2 text-sm rounded">Add</button>
+                </form>
+                {filterSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {filterSkills.map((skill, index) => (
+                      <motion.span 
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium"
+                      >
+                        {skill}
+                        <button onClick={() => handleRemoveSkill(skill)} className="text-indigo-400 hover:text-indigo-600">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </motion.span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Job Type */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-bold text-lg text-gray-800">Job Type</h4>
+                  {filterType && (
+                    <button 
+                      onClick={() => triggerTransition(() => setFilterType(''))}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <select 
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                  value={filterType}
+                  onChange={(e) => triggerTransition(() => setFilterType(e.target.value))}
+                >
+                  <option value="">All Types</option>
+                  {JobTypes.map((type, i) => (
+                    <option key={i} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Categories */}
               <div className="mb-8">
