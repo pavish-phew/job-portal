@@ -4,19 +4,15 @@ import User from "../models/User.js";
 export const clerkWebhooks = async (req, res) => {
   try {
     const webhook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-    const reqBody = req.body;
-    if (!reqBody) {
-      return res.status(400).json({ error: "Missing request body" });
-    }
-    const { data, type } = reqBody;
-    if (!data || !type) {
-      return res.status(400).json({ error: "Invalid request body" });
-    }
-    await webhook.verify(JSON.stringify(reqBody), {
+    const payloadString = req.body.toString();
+    const svixHeaders = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
-    });
+    };
+
+    const evt = webhook.verify(payloadString, svixHeaders);
+    const { data, type } = evt;
 
     switch (type) {
       case "user.created": {
@@ -28,8 +24,7 @@ export const clerkWebhooks = async (req, res) => {
           resume: "",
         };
         await User.create(userData);
-        res.json({});
-        break;
+        return res.status(200).json({ success: true });
       }
       case "user.updated": {
         const userData = {
@@ -38,17 +33,15 @@ export const clerkWebhooks = async (req, res) => {
           image: data.image_url,
         };
         await User.findByIdAndUpdate(data.id, userData);
-        res.json({});
-        break;
+        return res.status(200).json({ success: true });
       }
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-        res.json({});
-        break;
+        return res.status(200).json({ success: true });
       }
       default:
-        res.status(400).json({ error: "Unhandled event type" });
-        break;
+        // For unhandled types, Clerk expect a 2xx response to stop retrying
+        return res.status(200).json({ success: true, message: "Unhandled event type" });
     }
   } catch (error) {
     console.error(error.message);

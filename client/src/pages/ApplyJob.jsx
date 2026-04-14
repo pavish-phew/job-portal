@@ -53,8 +53,9 @@ const ApplyJob = () => {
   const findSimilarJobs = (currentJob) => {
     const similar = jobs.filter(job => 
       job._id !== currentJob._id && 
-      (job.companyId._id === currentJob.companyId._id || 
-       job.category === currentJob.category)
+      (job.companyId?._id === currentJob.companyId?._id || 
+       job.category === currentJob.category ||
+       job.company === currentJob.company)
     ).slice(0, 4);
     setSimilarJobs(similar);
   };
@@ -131,13 +132,13 @@ const ApplyJob = () => {
                   >
                     <img
                       className="h-20 w-20 object-contain"
-                      src={jobData?.companyId?.image || assets.placeholder}
+                      src={jobData?.companyId?.image || jobData?.companyLogo || assets.company_icon}
                       alt="Company Logo"
                     />
                   </motion.div>
                   <div>
                     <h1 className="text-3xl font-bold text-white">{jobData?.title}</h1>
-                    <p className="text-xl text-blue-100 mt-1">{jobData?.companyId?.name}</p>
+                    <p className="text-xl text-blue-100 mt-1">{jobData?.companyId?.name || jobData?.company || 'Company'}</p>
                     
                     <div className="flex flex-wrap gap-4 mt-4">
                       <div className="flex items-center text-blue-100">
@@ -150,7 +151,7 @@ const ApplyJob = () => {
                       </div>
                       <div className="flex items-center text-blue-100">
                         <FiDollarSign className="mr-2" />
-                        {jobData?.salary ? kConvert.convertTo(jobData.salary) : "Competitive"}
+                        {jobData?.salary ? (typeof jobData.salary === 'number' ? `$${jobData.salary.toLocaleString()}` : jobData.salary) : "Competitive"}
                       </div>
                       <div className="flex items-center text-blue-100">
                         <FiClock className="mr-2" />
@@ -252,7 +253,7 @@ const ApplyJob = () => {
                   transition={{ delay: 0.3 }}
                   className="bg-white rounded-xl shadow-md p-6"
                 >
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">About {jobData?.companyId?.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4">About {jobData?.companyId?.name || jobData?.company || 'the Company'}</h3>
                   <p className="text-gray-600 mb-4">
                     {jobData?.companyId?.description || "Leading company in their industry."}
                   </p>

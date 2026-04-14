@@ -20,21 +20,26 @@ await connectCloudinary();
 
 // Middleware
 app.use(cors());
+
+// Webhook route MUST be placed before express.json() so it receives the raw unparsed Buffer
+app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
+
 app.use(express.json());
 app.use(clerkMiddleware());
 
 // Routes
 app.get("/", (req, res) => res.send("API Working"));
 
+app.use('/api/company', companyRoutes)
+app.use('/api/jobs', JobRoutes)
+app.use('/api/users', userRoutes)
+
+// Sentry error handler MUST be after all routes
 Sentry.setupExpressErrorHandler(app);
 
 app.get("/debug-sentry", function mainHandler(req, res) {
     throw new Error("My first Sentry error!");
-  });
-app.post('/webhooks',clerkWebhooks)
-app.use('/api/company',companyRoutes)
-app.use('/api/jobs', JobRoutes)
-app.use('/api/users', userRoutes)
+});
 
 // Start the server
 const port = process.env.PORT || 3000;

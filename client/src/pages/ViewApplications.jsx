@@ -44,7 +44,10 @@ const ViewApplications = () => {
       );
 
       if (data.success) {
-        fetchCompanyJobApplications();
+        // Optimistically update the UI to prevent full-page loading flashes
+        setApplicants(prev => prev.map(app => 
+          app._id === id ? { ...app, status } : app
+        ));
         toast.success(`Application ${status.toLowerCase()} successfully`);
       } else {
         toast.error(data.message);

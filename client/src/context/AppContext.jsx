@@ -17,7 +17,7 @@ export const AppContextProvider = (props) => {
         location: ''
     });
 
-    const [isSearched, setIsSearched] = useState(false); // Changed setter to camelCase
+    const [isSearched, setIsSearched] = useState(false);
 
     const [jobs , setJobs] = useState([]);
 
@@ -27,7 +27,7 @@ export const AppContextProvider = (props) => {
     const [companyData, setCompanyData] = useState(null)
 
     const [userData,setUserData] = useState(null)
-    const [userApplications,setUserApplications] = useState(null)
+    const [userApplications,setUserApplications] = useState([])
 
     // Function to Fetch Jobs data
     const fetchJobs = async () => {
@@ -37,7 +37,6 @@ export const AppContextProvider = (props) => {
 
         if(data.success){
           setJobs(data.jobs)
-          console.log(data.jobs);
         }
         else{
           toast.error(data.message)
@@ -49,103 +48,101 @@ export const AppContextProvider = (props) => {
       
     }
 
-    // Function to fetch Compnay Data
-    // Function to fetch Compnay Data
-const fetchCompanyData = async () => {
-    try {
-        const response = await axios.get(backendUrl + '/api/company/company',{headers: {token: companyToken}});
-        const data = response.data;
-        console.log(data); // Move the console.log statement here
+    // Function to fetch Company Data
+    const fetchCompanyData = async () => {
+        try {
+            const response = await axios.get(backendUrl + '/api/company/company',{headers: {token: companyToken}});
+            const data = response.data;
 
-        if(data.success){
-            setCompanyData(data.company);
+            if(data.success){
+                setCompanyData(data.company);
+            }
+            else{
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            toast.error(error.message);
         }
-        else{
-            toast.error(data.message);
+    }
+
+    // Function to fetch User Data
+    const fetchUserData = async () => {
+      try {
+        
+        const token = await getToken();
+
+        const {data} = await axios.get(backendUrl+"/api/users/user",
+          {headers: {Authorization: `Bearer ${token}`}})
+        
+          if(data.success){
+            setUserData(data.user);
+          }else{
+            toast.error(data.message)
+          }
+      } catch (error) {
+        toast.error(error.message)
+      }
+    }
+
+    // Function to fetch User's Applied data
+    const fetchUserApplications = async () =>{
+        try {
+          
+          const token = await getToken()
+
+          const {data} = await axios.get(backendUrl+"/api/users/applications",
+            {headers: {Authorization: `Bearer ${token}`}}
+          )
+
+          if(data.success){
+            setUserApplications(data.applications)
+          }
+          else{
+            toast.error(data.message)
+          }
+
+        } catch (error) {
+          toast.error(error.message)
         }
-
-    } catch (error) {
-        toast.error(error.message);
     }
-}
 
-// Function to fetch User Data
-const fetchUserData = async () => {
-  try {
-    
-    const token = await getToken();
+    useEffect(() => {
+        fetchJobs();
 
-    const {data} = await axios.get(backendUrl+"/api/users/user",
-      {headers: {Authorization: `Bearer ${token}`}})
-    
-      if(data.success){
-        setUserData(data.user);
-      }else{
-        toast.error(data.message)
-      }
-  } catch (error) {
-    toast.error(error.message)
-  }
-}
+        const storedCompanyToken = localStorage.getItem('companyToken');
 
-// Function to fetch User's  Applied data
-  const fetchUserApplications = async () =>{
-    try {
-      
-      const token = await getToken()
+        if (storedCompanyToken) {
+          setCompanyToken(storedCompanyToken);
+        }
+    }, []);
 
-      const {data} = await axios.get(backendUrl+"/api/users/applications",
-        {headers: {Authorization: `Bearer ${token}`}}
-      )
+    useEffect(() => {
+        if (companyToken) {
+          fetchCompanyData();
+        }
+    }, [companyToken]);
 
-      if(data.success){
-        setUserApplications(data.applications)
-      }
-      else{
-        toast.error(data.message)
-      }
+    useEffect(() => {
+        if (companyData) {
+          const storedCompanyData = JSON.stringify(companyData);
+          localStorage.setItem('companyData', storedCompanyData);
+        }
+    }, [companyData]);
 
-    } catch (error) {
-      toast.error(error.message)
-    }
-  }
+    useEffect(() => {
+        const storedCompanyData = localStorage.getItem('companyData');
+        if (storedCompanyData) {
+          setCompanyData(JSON.parse(storedCompanyData));
+        }
+    }, []);
 
-useEffect(() => {
-    fetchJobs();
-
-    const storedCompanyToken = localStorage.getItem('companyToken');
-
-    if (storedCompanyToken) {
-      setCompanyToken(storedCompanyToken);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (companyToken) {
-      fetchCompanyData();
-    }
-  }, [companyToken]);
-
-  useEffect(() => {
-    if (companyData) {
-      const storedCompanyData = JSON.stringify(companyData);
-      localStorage.setItem('companyData', storedCompanyData);
-    }
-  }, [companyData]);
-
-  useEffect(() => {
-    const storedCompanyData = localStorage.getItem('companyData');
-    if (storedCompanyData) {
-      setCompanyData(JSON.parse(storedCompanyData));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserData();
-      fetchUserApplications();
-    }
-  }, [user]);
+    useEffect(() => {
+        if (user) {
+          fetchUserData();
+          fetchUserApplications();
+        }
+    }, [user]);
   
 
     
@@ -160,7 +157,8 @@ useEffect(() => {
         userData, setUserData,
         userApplications, setUserApplications,
         fetchUserData,
-        fetchUserApplications
+        fetchUserApplications,
+        fetchJobs
       
     }
 

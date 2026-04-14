@@ -45,7 +45,7 @@ const Navbar = () => {
               <Zap size={24} className="text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Prodigy
+              Hire Careers
             </span>
           </div>
 
@@ -59,6 +59,13 @@ const Navbar = () => {
                 >
                   <Briefcase size={18} />
                   <span className="font-medium">My Jobs</span>
+                </Link>
+                <Link 
+                  to="/resume-analyzer" 
+                  className="hidden md:flex items-center gap-2 text-gray-700 hover:text-indigo-600 transition-all duration-200 px-4 py-2 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100"
+                >
+                  <Zap size={18} className="text-indigo-500" />
+                  <span className="font-medium text-indigo-700">AI Analyzer</span>
                 </Link>
                 <div className="flex items-center gap-3">
                   <div className="hidden md:block">
@@ -97,23 +104,6 @@ const Navbar = () => {
         </nav>
       </div>
 
-      {/* Add this to your tailwind.config.js or CSS file */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translateY(-100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        .animate-slideDown {
-          animation: slideDown 0.4s ease-out forwards;
-        }
-      `}</style>
     </>
   );
 };

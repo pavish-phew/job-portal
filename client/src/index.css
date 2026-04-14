@@ -60,3 +60,25 @@
   .animate-gradient {
     animation: gradient 4s ease infinite;
   }
+
+  /* Navbar slide-down animation */
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.4s ease-out forwards;
+  }
+
+  /* Footer gradient bar animation */
+  .background-animate {
+    background-size: 200%;
+    animation: gradient 8s ease infinite;
+  }

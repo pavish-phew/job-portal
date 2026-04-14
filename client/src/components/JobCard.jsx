@@ -3,7 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FiBookmark, FiMapPin, FiBriefcase, FiDollarSign, FiClock } from "react-icons/fi";
 
-const JobCard = ({ job }) => {
+const JobCard = ({ 
+  job = {
+    title: "",
+    companyId: { name: "", image: "" },
+    company: "",
+    companyLogo: "",
+    location: "",
+    level: "",
+    salary: null,
+    type: "",
+    category: "",
+    description: "",
+    skills: [],
+    date: null,
+    _id: "",
+  } 
+}) => {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -27,8 +43,46 @@ const JobCard = ({ job }) => {
   const formatSalary = (salary) => {
     if (!salary) return "Salary available";
     if (typeof salary === "string") return salary;
+    if (typeof salary === "number") return `$${salary.toLocaleString()}`;
     if (salary.min && salary.max) return `$${salary.min} - $${salary.max}`;
     return `$${salary.amount}`;
+  };
+
+  // Get company name - handles both populated companyId and direct company field
+  const getCompanyName = () => {
+    if (job.companyId?.name) return job.companyId.name;
+    if (job.company) return job.company;
+    return "Company";
+  };
+
+  // Get company logo with strict frontend validation to prevent 404/DNS network errors
+  const getValidatedLogo = () => {
+    // Elegant dynamic fallback using company initials (Guaranteed to never DNS fail like Clearbit does)
+    const companyNameParam = encodeURIComponent(getCompanyName() || "Company");
+    const dynamicFallback = `https://ui-avatars.com/api/?name=${companyNameParam}&background=random&color=fff&bold=true&rounded=true&size=128`;
+    
+    // Prioritize available logo sources
+    let logoUrl = job.logo || (job.companyId && job.companyId.image) || job.companyLogo;
+    
+    if (!logoUrl) return dynamicFallback;
+
+    try {
+      const parsedUrl = new URL(logoUrl);
+      
+      // Clearbit is famously blocked by many ISPs and AdBlockers at the DNS level (resulting in ERR_NAME_NOT_RESOLVED)
+      // To ensure ZERO console errors, we intercept it and serve the reliable generated avatar instead.
+      if (parsedUrl.hostname.includes("clearbit.com")) {
+        return dynamicFallback; 
+      }
+      
+      return logoUrl;
+    } catch (error) {
+      // Allow valid relative local paths (e.g., "/default-company.png")
+      if (typeof logoUrl === "string" && logoUrl.startsWith("/")) {
+        return logoUrl;
+      }
+      return dynamicFallback;
+    }
   };
 
   return (
@@ -45,7 +99,7 @@ const JobCard = ({ job }) => {
       >
         <div className="bg-white rounded-2xl overflow-hidden">
           {/* Ribbon */}
-          {getTimePassed(job.postedAt) === "Just now" && (
+          {getTimePassed(job.date) === "Just now" && (
             <span className="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] px-2 py-1 rounded-full font-semibold shadow-md z-10 animate-pulse">
               NEW
             </span>
@@ -56,14 +110,19 @@ const JobCard = ({ job }) => {
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
                 <img
-                  src={job.companyId?.image || "/default-company.png"}
-                  alt="logo"
+                  src={getValidatedLogo()}
+                  alt={`${getCompanyName()} logo`}
+                  onError={(e) => {
+                    // Final fallback if the network request still fails
+                    e.target.onerror = null;
+                    e.target.src = "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg";
+                  }}
                   className="w-full h-full object-contain p-1"
                 />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-zinc-800">{job.title || "Job Title"}</h3>
-                <p className="text-sm text-gray-500">{job.companyId?.name || "Company"}</p>
+                <p className="text-sm text-gray-500">{getCompanyName()}</p>
               </div>
             </div>
             <button
@@ -91,6 +150,11 @@ const JobCard = ({ job }) => {
             {job.type && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-orange-50 text-orange-600">
                 <FiClock className="text-sm" /> {job.type}
+              </span>
+            )}
+            {job.category && (
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-violet-50 text-violet-600">
+                {job.category}
               </span>
             )}
           </div>
@@ -132,7 +196,7 @@ const JobCard = ({ job }) => {
 
           {/* Footer */}
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-            <span className="text-xs text-gray-500">Posted {getTimePassed(job.postedAt)}</span>
+            <span className="text-xs text-gray-500">Posted {getTimePassed(job.date)}</span>
             <div className="flex gap-2">
               <button
                 onClick={() => {
@@ -160,20 +224,4 @@ const JobCard = ({ job }) => {
   );
 };
 
-JobCard.defaultProps = {
-  job: {
-    title: "",
-    companyId: { name: "", image: "" },
-    location: "",
-    level: "",
-    salary: null,
-    type: "",
-    description: "",
-    skills: [],
-    postedAt: null,
-    _id: "",
-  },
-};
-
 export default JobCard;
-  

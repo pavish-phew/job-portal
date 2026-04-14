@@ -39,18 +39,24 @@ const JobListing = () => {
   useEffect(() => {
     const filterJobs = () => {
       const matchesCategory = (job) =>
-        selectedCategory.length === 0 || selectedCategory.includes(job.category);
+        selectedCategory.length === 0 || 
+        (job.category && selectedCategory.some(cat => 
+          cat.toLowerCase() === job.category.toLowerCase()
+        ));
 
       const matchesLocation = (job) =>
-        selectedLocation.length === 0 || selectedLocation.includes(job.location);
+        selectedLocation.length === 0 || 
+        (job.location && selectedLocation.some(loc => 
+          job.location.toLowerCase().includes(loc.toLowerCase())
+        ));
 
       const matchesTitle = (job) =>
         searchFilter.title === "" ||
-        job.title.toLowerCase().includes(searchFilter.title.toLowerCase());
+        (job.title && job.title.toLowerCase().includes(searchFilter.title.toLowerCase()));
 
       const matchesSearchLocation = (job) =>
         searchFilter.location === "" ||
-        job.location.toLowerCase().includes(searchFilter.location.toLowerCase());
+        (job.location && job.location.toLowerCase().includes(searchFilter.location.toLowerCase()));
 
       const newFilteredJobs = jobs
         .slice()

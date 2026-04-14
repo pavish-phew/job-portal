@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import AddJob from "./pages/AddJob";
 import ManageJobs from "./pages/ManageJobs";
 import ViewApplications from "./pages/ViewApplications";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import "quill/dist/quill.snow.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/apply-job/:id" element={<ApplyJob />} />
         <Route path="/recruiter-login" element={<RecruiterLogin />} />
         <Route path="/applications" element={<Applications />} />
+        <Route path="/resume-analyzer" element={<ResumeAnalyzer />} />
         <Route path="/dashboard" element={<Dashboard />}>
           {companyToken ? (
             <>

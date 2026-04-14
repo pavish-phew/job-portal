@@ -6,8 +6,8 @@ import Job from "../models/Job.js";
 export const getJobs = async (req, res) => {
     try {
         
-        const jobs = await Job.find({ visible: true})
-        .populate({path: "companyId", select: "-password"})
+        const jobs = await Job.find({ visible: { $ne: false } })
+            .populate('companyId', 'name email image')
 
         res.json({success: true, jobs})
 
@@ -23,11 +23,8 @@ export const getJobById = async (req, res) => {
         
         const {id} = req.params
         const job = await Job.findById(id)
-        .populate({
-            path:"companyId",
-            select:"-password",
-        
-        })
+            .populate('companyId', 'name email image')
+
         if(!job){
             return res.json({
                 success:false,
